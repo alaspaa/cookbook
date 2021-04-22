@@ -2,6 +2,7 @@ package our.family.cookbook;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,12 +43,13 @@ public class Controller {
 
     @GetMapping("/{id}")
     public Recipe getRecipesById(@PathVariable String id) {
-        for (Recipe r : cookbook) {
-            if (id.equals(r.getName())) {
-                return r;
-            }
+        Optional<Recipe> retval = cookbook.stream().filter(recipe -> recipe.getName().equals(id)).findFirst();
+
+        if(retval.isPresent()) {
+            return retval.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found");
         }
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recipe not found");
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
