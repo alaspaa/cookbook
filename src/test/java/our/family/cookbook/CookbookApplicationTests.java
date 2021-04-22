@@ -54,13 +54,28 @@ class CookbookApplicationTests {
     public void test_RecipeByIngredient() throws JsonProcessingException {
         for (Recipe r : cookBook) {
             for (Ingredient i : r.getIngredients()) {
-                String url = getBaseUrl() + "?ingredient=" + i.getName();
-                List<Recipe> recipes = getStringAsRecipeList(template.getForObject(url, String.class));
+                List<Recipe> recipes = getStringAsRecipeList(getRecipeByIngredient(i.getName()));
 
                 Assertions.assertTrue(!recipes.isEmpty());
                 recipes.stream().anyMatch(item -> item.getName().equals(r.getName()));
             }
         }
+    }
+
+    @Test
+    public void test_RecipeByIngredient_EmptyIngredient() throws JsonProcessingException {
+        List<Recipe> recipes = getStringAsRecipeList(getRecipeByIngredient(""));
+        Assertions.assertEquals(3, recipes.size());
+    }
+
+    @Test
+    public void test_RecipeByIngredient_IngredientNotFound() throws JsonProcessingException {
+        Assertions.assertTrue(getStringAsRecipeList(getRecipeByIngredient("Not an ingredient")).isEmpty());
+    }
+
+    private String getRecipeByIngredient(String ingredient) throws JsonProcessingException {
+        String url = getBaseUrl() + "?ingredient=" + ingredient;
+        return template.getForObject(url, String.class);
     }
 
     @Test
