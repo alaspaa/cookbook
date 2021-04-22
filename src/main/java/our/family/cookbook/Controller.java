@@ -2,6 +2,7 @@ package our.family.cookbook;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,23 +32,12 @@ public class Controller {
         if (ingredient == null || ingredient.isEmpty()) {
             return cookbook;
         } else {
-            List<Recipe> recipes = new ArrayList<>();
-            for (Recipe r : cookbook) {
-                if (hasIngredient(r, ingredient)) {
-                    recipes.add(r);
-                }
-            }
-            return recipes;
+            return cookbook.stream().filter(item -> hasIngredient(item.getIngredients(), ingredient)).collect(Collectors.toList());
         }
     }
 
-    private boolean hasIngredient(Recipe recipe, String ingredient) {
-        for (Ingredient i : recipe.getIngredients()) {
-            if (ingredient.toLowerCase().equals(i.getName().toLowerCase())) {
-                return true;
-            }
-        }
-        return false;
+    private boolean hasIngredient(List<Ingredient> ingredients, String requestedIngredient) {
+        return ingredients.stream().anyMatch(ingredient -> ingredient.getName().toLowerCase().equals(requestedIngredient.toLowerCase()));
     }
 
     @GetMapping("/{id}")
