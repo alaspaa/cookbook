@@ -8,13 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,9 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Controller {
     @Autowired
     List<Recipe> cookbook;
-
-    @Autowired
-    ObjectMapper objectMapper;
 
     @GetMapping
     public List<Recipe> getRecipes(@RequestParam(required = false) String ingredient) {
@@ -53,8 +44,26 @@ public class Controller {
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-    public String addRecipe(@RequestBody Recipe recipe) {
-        cookbook.add(recipe);
-        return "Recipe added to cookbook";
+    public Recipe addRecipe(@RequestBody Recipe recipe) {
+        if(cookbook.stream().anyMatch(item -> recipe.getName().toLowerCase().equals(item.getName()))) {
+            return updateRecipe(recipe);
+        } else {
+            cookbook.add(recipe);
+            return recipe;
+        }
+
+    }
+
+    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Recipe updateRecipe(@RequestBody Recipe recipe) {
+        String id = recipe.getName();
+        cookbook = cookbook.stream().map(item -> {
+            if(item.getName().equals(id)) {
+                item = recipe;
+            }
+            return item;
+        }).collect(Collectors.toList());
+
+         return recipe;
     }
 }
